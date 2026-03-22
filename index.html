@@ -10,6 +10,7 @@
             padding: 50px;
             font-size: 24px;
             text-align: center;
+            transition: background-color 0.02s linear;
         }
         .warning {
             color: yellow;
@@ -36,9 +37,26 @@
             font-size: 20px;
             cursor: pointer;
             margin: 20px;
+            transition: 0.1s;
+            font-weight: bold;
+            box-shadow: 0 0 10px red;
         }
         .fake-button:hover {
             background: #ff5555;
+            transform: scale(1.02);
+        }
+        /* Класс для вспышки (добавляется/удаляется скриптом) */
+        .flash-red {
+            background-color: #ff0000 !important;
+            transition: background-color 0.01s linear;
+        }
+        .flash-white {
+            background-color: #ffffff !important;
+            transition: background-color 0.01s linear;
+        }
+        /* убираем стандартные подчеркивания, делаем всё жестко */
+        * {
+            user-select: none;
         }
     </style>
 </head>
@@ -63,14 +81,69 @@
 
     <p>Ваши пароли, фотографии и банковские данные уже передаются на сервер злоумышленников.</p>
     
-    <button class="fake-button" onclick="window.location.href='https://www.youtube.com/watch?v=dQw4w9WgXcQ'">
+    <button class="fake-button" id="panicButton">
         СРОЧНО ЛЕЧИТЬ (НАЖМИ!)
     </button>
     
-    <p style="color:#888; font-size:12px; margin-top:50px;">* Это шутка. Расслабься и улыбнись! 😄</p>
-
     <script>
-        // Автопрокрутка для драматизма
+        // --- Звук (максимальная громкость) ---
+        // Укажите путь к вашему звуковому файлу:
+        const soundFile = 'music.mp3';   // <- СЮДА ВСТАВЬ СВОЙ ФАЙЛ (рядом с index.html)
+
+        function playSoundMaxVolume() {
+            const audio = new Audio(soundFile);
+            audio.volume = 1.0;      // 100% громкость
+            audio.play().catch(e => console.warn("Звук не сыграл:", e));
+        }
+
+        // --- Жесткая вспышка (красный/белый) ---
+        let flashInterval = null;
+        
+        function startIntenseFlash() {
+            // если уже мигает — не запускаем второй раз
+            if (flashInterval) return;
+            
+            const body = document.body;
+            let flashState = 0;
+            // очень быстрое мигание (смена цвета каждые 60ms)
+            flashInterval = setInterval(() => {
+                // чередуем: красный, белый, красный, белый...
+                if (flashState % 2 === 0) {
+                    body.classList.add('flash-red');
+                    body.classList.remove('flash-white');
+                } else {
+                    body.classList.add('flash-white');
+                    body.classList.remove('flash-red');
+                }
+                flashState++;
+                
+                // через 1.6 секунд останавливаем, чтобы не вечно
+                if (flashState > 26) {  // ~1.6 сек (26*0.06)
+                    clearInterval(flashInterval);
+                    flashInterval = null;
+                    body.classList.remove('flash-red', 'flash-white');
+                }
+            }, 60);
+        }
+
+        // --- обработчик кнопки ---
+        const btn = document.getElementById('panicButton');
+        btn.addEventListener('click', () => {
+            // 1) включаем звук на 100% громкости
+            playSoundMaxVolume();
+            
+            // 2) запускаем ультра-быстрое мигание (красный/белый)
+            startIntenseFlash();
+            
+            // 3) дополнительный эффект: лёгкая вибрация кнопки
+            btn.style.transform = 'scale(0.98)';
+            setTimeout(() => { btn.style.transform = ''; }, 120);
+            
+            // 4) опционально: предупреждение в консоль (для фана)
+            console.log("ПАНИКА! ЛЕЧЕНИЕ АКТИВИРОВАНО (шоковая терапия)");
+        });
+        
+        // небольшая автопрокрутка для драматизма (как в оригинале)
         window.scrollTo(0, 0);
         let scrollPos = 0;
         const scrollInterval = setInterval(() => {
